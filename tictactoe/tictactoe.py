@@ -88,19 +88,28 @@ def winner(board):
 
 
 
+# def terminal(board):
+#     """
+#     Returns True if game is over, False otherwise.
+#     """
+#     state = winner(board)
+#     if state != None:
+#         return True
+
+#     for row in board:
+#         for cell in row:
+#             if cell == EMPTY:
+#                 return False
+#     return True
+
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    state = winner(board)
-    if state != None:
+    if winner(board) is not None:
         return True
-
-    for row in board:
-        for col in board:
-            if col is not EMPTY:
-                return True
-    return False
+    # If there are still empty cells, the game is not over
+    return not any(EMPTY in row for row in board)
 
 
 
@@ -123,10 +132,27 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
     if terminal(board):
-        return utility(board), None
-    
-    
+        return None
+    current_maximizing = is_maximizing(board)
+    best_move = None
 
+    if current_maximizing:
+        best_score = -math.inf
+        for action in actions(board):
+            new_board = result(board, action)
+            score = minimax_score(new_board, False)
+            if score > best_score:
+                best_score = score
+                best_move = action
+    else:
+        best_score = math.inf
+        for action in actions(board):
+            new_board = result(board, action)
+            score = minimax_score(new_board, True)
+            if score < best_score:
+                best_score = score
+                best_move = action
+    return best_move
 
 
 
@@ -134,6 +160,30 @@ def minimax(board):
 
 
 # Helper functions
+
+def minimax_score(board, maximizing):
+    if terminal(board):
+        return utility(board)
+
+    if maximizing:
+        max_score = -math.inf
+        for action in actions(board):
+            new_board = result(board, action)
+            score = minimax_score(new_board, False)
+            max_score = max(score, max_score)
+        return max_score
+    else:
+        min_score = math.inf
+        for action in actions(board):
+            new_board = result(board, action)
+            score = minimax_score(new_board, True)
+            min_score = min(score, min_score)
+        return min_score
+
+
+
+
+
 
 def is_maximizing(board):
     return player(board) == "X"
